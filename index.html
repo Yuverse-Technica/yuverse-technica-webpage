@@ -805,9 +805,89 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Success message styling */
+        .success-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-heavy);
+            z-index: 10000;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        .success-message-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: none;
+        }
+
+        .success-message-overlay.show {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success-color);
+            margin-bottom: 1rem;
+        }
+
+        .success-message h3 {
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .success-message p {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .success-message button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .success-message button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
     </style>
 </head>
 <body>
+    <!-- Success Message Modal -->
+    <div class="success-message-overlay" id="successOverlay"></div>
+    <div class="success-message" id="successMessage">
+        <div class="success-icon">✓</div>
+        <h3>Request Received!</h3>
+        <p>Thank you for reaching out! Our software repair experts will diagnose your issue and contact you within 24 hours with a detailed solution plan.</p>
+        <button onclick="closeSuccessMessage()">Continue</button>
+    </div>
     <div class="page-loader" id="pageLoader">
         <div class="loader-spinner"></div>
     </div>
@@ -975,7 +1055,14 @@
 
                         <div class="contact-form">
                             <h2>Request Free Diagnosis</h2>
-                            <form aria-label="Software Repair Contact Form">
+                            <form action="https://formsubmit.co/kaabhijith27.7@gmail.com" method="POST" aria-label="Software Repair Contact Form">
+                                <!-- FormSubmit Configuration -->
+                                <input type="hidden" name="_subject" value="New Software Repair Request from Yuverse Technica Website">
+                                <input type="hidden" name="_captcha" value="false">
+                                <input type="hidden" name="_template" value="table">
+                                <input type="text" name="_honey" style="display:none">
+                                <input type="hidden" name="_next" value="https://yuversetechnica.com?submitted=true">
+
                                 <div class="form-group">
                                     <label for="name">Full Name *</label>
                                     <input type="text" id="name" name="name" required>
@@ -1066,41 +1153,34 @@
             navLinks.classList.toggle('active');
         }
 
-        // Form submission with enhanced validation
+        // Show success message on form submission redirect
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('submitted') === 'true') {
+                // Show success modal
+                document.getElementById('successMessage').classList.add('show');
+                document.getElementById('successOverlay').classList.add('show');
+                // Remove the query parameter from URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // Show contact section
+                showSection('contact');
+            }
+        });
+
+        // Close success message
+        function closeSuccessMessage() {
+            document.getElementById('successMessage').classList.remove('show');
+            document.getElementById('successOverlay').classList.remove('show');
+        }
+
+        // Close on overlay click
+        document.getElementById('successOverlay').addEventListener('click', closeSuccessMessage);
+
+        // Form submission - add loading state
         document.querySelector('form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Get form data
-            const formData = new FormData(this);
-            const name = formData.get('name');
-            const email = formData.get('email');
-            const message = formData.get('message');
-            
-            // Basic validation
-            if (!name || !email || !message) {
-                alert('Please fill in all required fields.');
-                return;
-            }
-            
-            // Email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                alert('Please enter a valid email address.');
-                return;
-            }
-            
-            // Simulate form submission
             const submitBtn = document.querySelector('.submit-btn');
-            const originalText = submitBtn.textContent;
             submitBtn.textContent = 'Sending...';
             submitBtn.disabled = true;
-            
-            setTimeout(() => {
-                alert('Thank you for reaching out! Our repair experts will diagnose your issue and contact you within 24 hours with a solution plan.');
-                this.reset();
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }, 1500);
         });
 
         // Enhanced scroll animations
